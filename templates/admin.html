@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self';" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta name="referrer" content="no-referrer" />
+  <title>Painel Admin – 229MG</title>
+  <link rel="stylesheet" href="{{ url_for('static_files', filename='style.css') }}" />
+</head>
+<body class="admin-body">
+
+  <div id="adminSection">
+    <div class="admin-topbar">
+      <div class="admin-topbar-left">
+        <img src="{{ url_for('static_files', filename='brazao.jpg') }}" alt="Logo" class="logo-sm" />
+        <span>Painel Admin – 229MG</span>
+      </div>
+      <button id="btnLogout" class="btn-logout">Sair</button>
+    </div>
+
+    <div class="admin-content">
+      <div class="admin-header-row">
+        <h2>Pré-inscrições Recebidas</h2>
+        <div class="admin-actions">
+          <input type="text" id="searchInput" placeholder="🔍 Buscar por nome..." class="search-input" />
+          <button id="btnExport" class="btn-export">⬇ Exportar CSV</button>
+          <button id="btnClearAll" class="btn-danger">🗑 Limpar Tudo</button>
+        </div>
+      </div>
+
+      <p id="totalCount" class="total-count"></p>
+
+      <div class="table-wrapper">
+        <table id="inscricoesTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Data</th>
+              <th>Jovem</th>
+              <th>Idade</th>
+              <th>Responsável</th>
+              <th>Endereço</th>
+              <th>Contato</th>
+              <th>Confirmação</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+        <p id="emptyMsg" class="empty-msg hidden">Nenhuma pré-inscrição encontrada.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const TOKEN = "{{ token }}";
+  </script>
+  <script src="{{ url_for('static_files', filename='admin.js') }}"></script>
+</body>
+</html>

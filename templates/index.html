@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self';" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta name="referrer" content="no-referrer" />
+  <title>229MG – Formulário de Pré-inscrição</title>
+  <link rel="stylesheet" href="{{ url_for('static_files', filename='style.css') }}" />
+  <link rel="icon" type="image/x-icon" href="{{ url_for('static_files', filename='brazao.jpg') }}">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <img src="{{ url_for('static_files', filename='brazao.jpg') }}" alt="Logo 229MG" class="logo" />
+      <h1>229MG Grupo Escoteiro Professora Marinha Maciel</h1>
+      <p class="subtitle">Formulário de Pré-inscrição</p>
+    </header>
+
+    <form id="formPreInscricao" novalidate>
+      <div id="step1" class="form-step active">
+        <h2>Dados da Inscrição</h2>
+
+        <div class="field">
+          <label for="nomeJovem">Nome do Jovem <span class="req">*</span></label>
+          <input type="text" id="nomeJovem" name="nomeJovem" placeholder="Nome completo" required autocomplete="off" />
+          <span class="error" id="err-nomeJovem"></span>
+        </div>
+
+        <div class="field">
+          <label for="idadeJovem">Idade do Jovem <span class="req">*</span></label>
+          <small>Neste momento estamos pré-inscrevendo crianças e jovens de 07 a 11 anos</small>
+          <input type="number" id="idadeJovem" name="idadeJovem" placeholder="Idade" min="7" max="11" required />
+          <span class="error" id="err-idadeJovem"></span>
+        </div>
+
+        <div class="field">
+          <label for="nomeResponsavel">Nome do Responsável <span class="req">*</span></label>
+          <input type="text" id="nomeResponsavel" name="nomeResponsavel" placeholder="Nome completo" required autocomplete="name" />
+          <span class="error" id="err-nomeResponsavel"></span>
+        </div>
+
+        <div class="field">
+          <label for="endereco">Endereço do Responsável <span class="req">*</span></label>
+          <input type="text" id="endereco" name="endereco" placeholder="Rua, número, bairro, cidade" required autocomplete="address-line1" />
+          <span class="error" id="err-endereco"></span>
+        </div>
+
+        <div class="field">
+          <label for="contato">Contato (WhatsApp) <span class="req">*</span></label>
+          <input type="tel" id="contato" name="contato" placeholder="(00) 00000-0000" required autocomplete="tel" maxlength="15" />
+          <span class="error" id="err-contato"></span>
+        </div>
+
+        <div class="field checkbox-field">
+          <label class="checkbox-label">
+            <input type="checkbox" id="lgpd" required />
+            Concordo em disponibilizar os dados conforme a LGPD <span class="req">*</span>
+          </label>
+          <span class="error" id="err-lgpd"></span>
+        </div>
+
+        <button type="button" class="btn-next" id="btnNext">Próximo</button>
+      </div>
+
+      <div id="step2" class="form-step hidden">
+        <h2>Confirmação de Presença</h2>
+        
+        <div class="info-box">
+          <p><strong>Para a confirmação da inscrição, você será contatado pela coordenação do Grupo Escoteiro 229MG para levar alguns documentos presencialmente no seguinte endereço:</strong></p>
+          <p>Escola Municipal Prefeito João Eustáquio 2 – Av. Tocantins 447 – Carijós – Belo Vale MG</p>
+          <p><strong>Datas e horários disponíveis:</strong> 15/10, 22/10, 29/10 e 05/11 de 18h30 às 20h</p>
+          <p><strong>Importante:</strong> A inscrição só será efetivada se comparecer presencialmente, em um desses dias e horário acima, com os documentos em mãos, sem pendências.</p>
+        </div>
+
+        <div class="field checkbox-field">
+          <label class="checkbox-label">
+            <input type="radio" name="confirmacao" value="sim" required />
+            Concordo e assim que contatado, providenciarei os documentos.
+          </label>
+        </div>
+
+        <div class="field checkbox-field">
+          <label class="checkbox-label">
+            <input type="radio" name="confirmacao" value="nao" required />
+            Não concordo ou não poderei providenciar os documentos.
+          </label>
+        </div>
+        <span class="error" id="err-confirmacao"></span>
+
+        <div class="button-group">
+          <button type="button" class="btn-back" id="btnBack">Voltar</button>
+          <button type="submit" class="btn-submit">Enviar Inscrição</button>
+        </div>
+      </div>
+    </form>
+
+    <div id="successMsg" class="success-msg hidden">
+      <span>✅</span>
+      <p>Pré-inscrição realizada com sucesso!</p>
+      <p>Entraremos em contato em breve pelo WhatsApp informado.</p>
+    </div>
+  </div>
+
+  <footer>
+    <p>229MG – Grupo Escoteiro Professora Marinha Maciel &copy; <span id="year"></span></p>
+  </footer>
+
+  <script src="{{ url_for('static_files', filename='script.js') }}"></script>
+</body>
+</html>
