@@ -12,7 +12,7 @@ load_dotenv()
 app = Flask(__name__, template_folder='templates', static_folder='static')
 app.config['JSON_SORT_KEYS'] = False
 
-PORT = int(os.getenv('PORT', 3000))
+PORT = int(os.getenv('PORT', 8000))
 APPS_SCRIPT_URL = os.getenv('APPS_SCRIPT_URL')
 ADMIN_SECRET = os.getenv('ADMIN_SECRET')
 JWT_SECRET = os.getenv('JWT_SECRET')
