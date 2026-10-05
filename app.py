@@ -19,9 +19,10 @@ PORT = int(os.getenv('PORT', 8000))
 APPS_SCRIPT_URL = os.getenv('APPS_SCRIPT_URL')
 ADMIN_SECRET = os.getenv('ADMIN_SECRET')
 JWT_SECRET = os.getenv('JWT_SECRET')
+APPS_SCRIPT_KEY = os.getenv('APPS_SCRIPT_KEY')
 
-if not APPS_SCRIPT_URL or not ADMIN_SECRET or not JWT_SECRET:
-    raise ValueError('ERRO: APPS_SCRIPT_URL, ADMIN_SECRET e JWT_SECRET devem estar definidas no .env')
+if not APPS_SCRIPT_URL or not ADMIN_SECRET or not JWT_SECRET or not APPS_SCRIPT_KEY:
+    raise ValueError('ERRO: APPS_SCRIPT_URL, ADMIN_SECRET, JWT_SECRET e APPS_SCRIPT_KEY devem estar definidas')
 
 # Session para reutilizar conexões HTTP
 session = requests.Session()
@@ -104,6 +105,7 @@ def api():
     
     params = dict(request.args)
     params.update(dict(request.form))
+    params['key'] = APPS_SCRIPT_KEY
     
     try:
         resp = session.get(APPS_SCRIPT_URL, params=params, timeout=25)
