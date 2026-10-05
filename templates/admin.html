@@ -12,7 +12,7 @@
 </head>
 <body class="admin-body">
 
-  <div id="adminSection">
+  <div id="adminSection" data-token="{{ token }}">
     <div class="admin-topbar">
       <div class="admin-topbar-left">
         <img src="{{ url_for('static_files', filename='brazao.jpg') }}" alt="Logo" class="logo-sm" />
@@ -55,9 +55,6 @@
     </div>
   </div>
 
-  <script>
-    const TOKEN = "{{ token }}";
-  </script>
   <script src="{{ url_for('static_files', filename='admin.js') }}"></script>
 </body>
 </html>

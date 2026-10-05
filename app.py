@@ -2,17 +2,20 @@ import os
 import json
 import jwt
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from functools import wraps
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask_compress import Compress
 
 load_dotenv()
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
 app.config['JSON_SORT_KEYS'] = False
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 31536000  # Cache de 1 ano para arquivos estáticos
+Compress(app)
 
-PORT = int(os.getenv('PORT', 3000))
+PORT = int(os.getenv('PORT', 8000))
 APPS_SCRIPT_URL = os.getenv('APPS_SCRIPT_URL')
 ADMIN_SECRET = os.getenv('ADMIN_SECRET')
 JWT_SECRET = os.getenv('JWT_SECRET')
@@ -20,10 +23,13 @@ JWT_SECRET = os.getenv('JWT_SECRET')
 if not APPS_SCRIPT_URL or not ADMIN_SECRET or not JWT_SECRET:
     raise ValueError('ERRO: APPS_SCRIPT_URL, ADMIN_SECRET e JWT_SECRET devem estar definidas no .env')
 
+# Session para reutilizar conexões HTTP
+session = requests.Session()
+
 def require_jwt(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        token = request.args.get('token') or request.headers.get('Authorization', '').replace('Bearer ', '')
+        token = request.headers.get('Authorization', '').replace('Bearer ', '')
         if not token:
             return jsonify({'status': 'error', 'message': 'Token ausente'}), 401
         try:
@@ -46,34 +52,61 @@ def index():
 def admin():
     if request.args.get('secret') != ADMIN_SECRET:
         return 'Acesso negado.', 401
-    token = jwt.encode({'exp': datetime.utcnow() + timedelta(hours=8)}, JWT_SECRET, algorithm='HS256')
+    token = jwt.encode({'exp': datetime.now(timezone.utc) + timedelta(hours=8)}, JWT_SECRET, algorithm='HS256')
     return render_template('admin.html', token=token)
 
-@app.route('/api', methods=['GET'])
+@app.route('/api', methods=['GET', 'POST'])
 def api():
     response = app.make_response(jsonify({}))
-    response.headers['Cache-Control'] = 'no-store'
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
     response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
     
     allowed = ['login', 'getData', 'submit', 'deleteRow', 'clearAll']
-    action = request.args.get('action')
+    action = request.args.get('action') or request.form.get('action')
     
     if not action or action not in allowed:
-        return jsonify({'status': 'error', 'message': 'Ação inválida.'}), 400
+        response.data = json.dumps({'status': 'error', 'message': 'Ação inválida.'})
+        response.status_code = 400
+        return response
     
-    if action in ['deleteRow', 'clearAll']:
-        token = request.args.get('token') or request.headers.get('Authorization', '').replace('Bearer ', '')
+    if action in ['getData', 'deleteRow', 'clearAll']:
+        token = request.headers.get('Authorization', '').replace('Bearer ', '')
         if not token:
-            return jsonify({'status': 'error', 'message': 'Token ausente'}), 401
+            response.data = json.dumps({'status': 'error', 'message': 'Token ausente'})
+            response.status_code = 401
+            return response
         try:
             jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
         except jwt.InvalidTokenError:
-            return jsonify({'status': 'error', 'message': 'Token inválido'}), 401
+            response.data = json.dumps({'status': 'error', 'message': 'Token inválido'})
+            response.status_code = 401
+            return response
+    
+    if action == 'submit':
+        idade = request.args.get('idadeJovem') or request.form.get('idadeJovem')
+        lgpd = request.args.get('lgpd') or request.form.get('lgpd')
+        try:
+            idade_int = int(idade)
+            if idade_int < 7 or idade_int > 11:
+                response.data = json.dumps({'status': 'error', 'message': 'Idade inválida'})
+                response.status_code = 400
+                return response
+        except (ValueError, TypeError):
+            response.data = json.dumps({'status': 'error', 'message': 'Idade inválida'})
+            response.status_code = 400
+            return response
+        
+        if lgpd != 'true':
+            response.data = json.dumps({'status': 'error', 'message': 'LGPD não aceita'})
+            response.status_code = 400
+            return response
     
     params = dict(request.args)
+    params.update(dict(request.form))
     
     try:
-        resp = requests.get(APPS_SCRIPT_URL, params=params, timeout=25)
+        resp = session.get(APPS_SCRIPT_URL, params=params, timeout=25)
         resp.raise_for_status()
         
         body = resp.text
@@ -87,13 +120,21 @@ def api():
             if isinstance(data, str):
                 data = json.loads(data)
         except json.JSONDecodeError as e:
-            return jsonify({'status': 'error', 'message': f'Resposta inválida: {str(e)}'}), 500
+            response.data = json.dumps({'status': 'error', 'message': f'Resposta inválida: {str(e)}'})
+            response.status_code = 500
+            return response
         
-        return jsonify(data)
+        response.data = json.dumps(data)
+        response.headers['Content-Type'] = 'application/json'
+        return response
     except requests.Timeout:
-        return jsonify({'status': 'error', 'message': 'Tempo limite excedido.'}), 504
+        response.data = json.dumps({'status': 'error', 'message': 'Tempo limite excedido.'})
+        response.status_code = 504
+        return response
     except requests.RequestException as e:
-        return jsonify({'status': 'error', 'message': f'Erro ao conectar: {str(e)}'}), 502
+        response.data = json.dumps({'status': 'error', 'message': f'Erro ao conectar: {str(e)}'})
+        response.status_code = 502
+        return response
 
 @app.route('/static/<path:filename>')
 def static_files(filename):

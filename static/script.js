@@ -35,40 +35,32 @@ function clearErrors() {
 
 function validateStep1() {
   let ok = true;
-  console.log('Iniciando validação step1');
   
   if (!document.getElementById('nomeJovem').value || document.getElementById('nomeJovem').value.length < 2) {
-    console.log('Erro: nomeJovem inválido');
     setError('nomeJovem', 'Informe o nome do jovem.'); ok = false;
   }
   
   const idade = parseInt(document.getElementById('idadeJovem').value);
   if (!idade || idade < 7 || idade > 11) {
-    console.log('Erro: idade inválida', idade);
     setError('idadeJovem', 'Idade deve estar entre 7 e 11 anos.'); ok = false;
   }
   
   if (!document.getElementById('nomeResponsavel').value || document.getElementById('nomeResponsavel').value.length < 5) {
-    console.log('Erro: nomeResponsavel inválido');
     setError('nomeResponsavel', 'Informe o nome completo do responsável.'); ok = false;
   }
   
   if (!document.getElementById('endereco').value || document.getElementById('endereco').value.length < 5) {
-    console.log('Erro: endereco inválido');
     setError('endereco', 'Informe o endereço.'); ok = false;
   }
   
   if (document.getElementById('contato').value.replace(/\D/g, '').length < 10) {
-    console.log('Erro: contato inválido');
     setError('contato', 'Informe um telefone válido com DDD.'); ok = false;
   }
   
   if (!document.getElementById('lgpd').checked) {
-    console.log('Erro: lgpd não marcado');
     setError('lgpd', 'É necessário aceitar o termo LGPD.'); ok = false;
   }
   
-  console.log('Validação step1 resultado:', ok);
   return ok;
 }
 
@@ -83,16 +75,12 @@ function validateStep2() {
 
 function nextStep() {
   clearErrors();
-  console.log('nextStep chamado');
   if (!validateStep1()) {
-    console.log('Validação falhou');
     return;
   }
-  console.log('Validação passou, mudando para step2');
   document.getElementById('step1').classList.remove('active');
   document.getElementById('step2').classList.remove('hidden');
   document.getElementById('step2').classList.add('active');
-  console.log('Step2 classes:', document.getElementById('step2').className);
 }
 
 function prevStep() {
@@ -123,12 +111,24 @@ form.addEventListener('submit', async function (e) {
 
   try {
     const params = new URLSearchParams({ action: 'submit', ...data }).toString();
-    await fetch(`/api?${params}`);
+    const res = await fetch(`/api?${params}`);
+    
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.message || 'Erro ao enviar');
+    }
+    
+    const result = await res.json();
+    if (result.status === 'error') {
+      throw new Error(result.message || 'Erro ao enviar');
+    }
+    
     setTimeout(() => {
       form.classList.add('hidden');
       successMsg.classList.remove('hidden');
     }, 1500);
-  } finally {
+  } catch (error) {
+    setError('confirmacao', 'Erro ao enviar: ' + error.message);
     btnSubmit.disabled = false;
     btnSubmit.textContent = 'Enviar Inscrição';
   }

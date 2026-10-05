@@ -1,22 +1,32 @@
 let allData = [];
+const TOKEN = document.getElementById('adminSection').getAttribute('data-token');
 
 async function fetchApi(params) {
   const qs = new URLSearchParams(params).toString();
   const res = await fetch(`/api?${qs}`, {
+    headers: { 'Authorization': `Bearer ${TOKEN}` },
     signal: AbortSignal.timeout(30000),
   });
-  if (!res.ok) throw new Error('Erro de rede');
-  return res.json();
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.message || 'Erro de rede');
+  }
+  const data = await res.json();
+  if (data.status === 'error') {
+    throw new Error(data.message || 'Erro na resposta');
+  }
+  return data;
 }
 
 async function loadData() {
   try {
-    const result = await fetchApi({ action: 'getData', token: TOKEN });
+    const result = await fetchApi({ action: 'getData' });
     allData = result.data || [];
     renderTable(allData);
     updateCount();
   } catch (e) {
     console.error('Erro ao carregar dados:', e);
+    alert('Erro ao carregar dados: ' + e.message);
   }
 }
 
@@ -35,17 +45,39 @@ function renderTable(data) {
   
   data.forEach((row, idx) => {
     const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${idx + 1}</td>
-      <td>${row.data || ''}</td>
-      <td>${row.nomeJovem || ''}</td>
-      <td>${row.idadeJovem || ''}</td>
-      <td>${row.nomeResponsavel || ''}</td>
-      <td>${row.endereco || ''}</td>
-      <td>${row.contato || ''}</td>
-      <td>${row.confirmacao || ''}</td>
-      <td><button class="btn-delete" onclick="deleteRow(${idx})">Deletar</button></td>
-    `;
+    const td1 = document.createElement('td');
+    td1.textContent = idx + 1;
+    const td2 = document.createElement('td');
+    td2.textContent = row.data || '';
+    const td3 = document.createElement('td');
+    td3.textContent = row.nomeJovem || '';
+    const td4 = document.createElement('td');
+    td4.textContent = row.idadeJovem || '';
+    const td5 = document.createElement('td');
+    td5.textContent = row.nomeResponsavel || '';
+    const td6 = document.createElement('td');
+    td6.textContent = row.endereco || '';
+    const td7 = document.createElement('td');
+    td7.textContent = row.contato || '';
+    const td8 = document.createElement('td');
+    td8.textContent = row.confirmacao || '';
+    const td9 = document.createElement('td');
+    const btn = document.createElement('button');
+    btn.className = 'btn-delete';
+    btn.textContent = 'Deletar';
+    btn.setAttribute('data-row-id', row.id || idx);
+    btn.addEventListener('click', () => deleteRow(row.id || idx));
+    td9.appendChild(btn);
+    
+    tr.appendChild(td1);
+    tr.appendChild(td2);
+    tr.appendChild(td3);
+    tr.appendChild(td4);
+    tr.appendChild(td5);
+    tr.appendChild(td6);
+    tr.appendChild(td7);
+    tr.appendChild(td8);
+    tr.appendChild(td9);
     tbody.appendChild(tr);
   });
 }
@@ -54,17 +86,16 @@ function updateCount() {
   document.getElementById('totalCount').textContent = `Total: ${allData.length} pré-inscrição(ões)`;
 }
 
-async function deleteRow(idx) {
+async function deleteRow(rowId) {
   if (confirm('Tem certeza que deseja deletar?')) {
-    const row = allData[idx];
     try {
-      await fetchApi({ action: 'deleteRow', token: TOKEN, rowId: row.id || idx });
-      allData.splice(idx, 1);
+      await fetchApi({ action: 'deleteRow', rowId: rowId });
+      allData = allData.filter(row => (row.id || allData.indexOf(row)) !== rowId);
       renderTable(allData);
       updateCount();
     } catch (e) {
       console.error('Erro ao deletar:', e);
-      alert('Erro ao deletar registro');
+      alert('Erro ao deletar: ' + e.message);
     }
   }
 }
@@ -97,7 +128,11 @@ document.getElementById('btnExport').addEventListener('click', function () {
   ]);
   
   const csv = [headers, ...rows].map(row => 
-    row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
+    row.map(cell => {
+      const str = String(cell);
+      if (str.match(/^[=+\-@]/)) return `'${str}`;
+      return `"${str.replace(/"/g, '""')}"`;
+    }).join(',')
   ).join('\n');
   
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -110,13 +145,13 @@ document.getElementById('btnExport').addEventListener('click', function () {
 document.getElementById('btnClearAll').addEventListener('click', async function () {
   if (confirm('Tem certeza que deseja limpar TODOS os dados?')) {
     try {
-      await fetchApi({ action: 'clearAll', token: TOKEN });
+      await fetchApi({ action: 'clearAll' });
       allData = [];
       renderTable(allData);
       updateCount();
     } catch (e) {
       console.error('Erro ao limpar dados:', e);
-      alert('Erro ao limpar dados');
+      alert('Erro ao limpar dados: ' + e.message);
     }
   }
 });
