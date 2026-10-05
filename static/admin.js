@@ -65,7 +65,7 @@ function renderTable(data) {
     const btn = document.createElement('button');
     btn.className = 'btn-delete';
     btn.textContent = 'Deletar';
-    btn.setAttribute('data-row-id', row.id || idx);
+    deleteRow(row.id)
     btn.addEventListener('click', () => deleteRow(row.id || idx));
     td9.appendChild(btn);
     
@@ -90,9 +90,7 @@ async function deleteRow(rowId) {
   if (confirm('Tem certeza que deseja deletar?')) {
     try {
       await fetchApi({ action: 'deleteRow', rowId: rowId });
-      allData = allData.filter(row => (row.id || allData.indexOf(row)) !== rowId);
-      renderTable(allData);
-      updateCount();
+      await loadData();
     } catch (e) {
       console.error('Erro ao deletar:', e);
       alert('Erro ao deletar: ' + e.message);
