@@ -435,7 +435,7 @@ table tbody tr:hover {
   }
 
   header h1 {
-    font-size: 22px;
+    font-size: 33px;
   }
 
   form {
@@ -468,5 +468,10 @@ table tbody tr:hover {
   table th,
   table td {
     padding: 8px;
+  }
+}
+@media (max-width: 453px) {
+    header h1 {
+    font-size: 22px;
   }
 }
