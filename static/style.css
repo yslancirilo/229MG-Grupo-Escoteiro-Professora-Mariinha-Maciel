@@ -41,6 +41,8 @@ header .logo {
 header h1 {
   font-size: 35px;
   margin-bottom: 5px;
+  text-align: center;
+  line-height: 1.2;
 }
 
 header .subtitle {
@@ -435,7 +437,8 @@ table tbody tr:hover {
   }
 
   header h1 {
-    font-size: 33px;
+    font-size: 26px;
+    line-height: 1.2;
   }
 
   form {
@@ -470,8 +473,9 @@ table tbody tr:hover {
     padding: 8px;
   }
 }
-@media (max-width: 453px) {
+@media (max-width: 480px) {
     header h1 {
-    font-size: 22px;
+    font-size: 26px;
   }
 }
+
