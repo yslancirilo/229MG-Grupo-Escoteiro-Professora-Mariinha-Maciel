@@ -478,4 +478,8 @@ table tbody tr:hover {
     font-size: 26px;
   }
 }
-
+@media (max-width: 362px) {
+    header h1 {
+    font-size: 22px;
+  }
+}
