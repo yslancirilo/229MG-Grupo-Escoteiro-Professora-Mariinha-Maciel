@@ -74,7 +74,7 @@ function renderTable(data) {
     // Botão WhatsApp
     const btnWpp = document.createElement('button');
     btnWpp.className = 'btn-whatsapp';
-    btnWpp.textContent = '📲 WhatsApp';
+    btnWpp.textContent = 'WhatsApp';
     btnWpp.addEventListener('click', () => {
       const numero = (row.contato || '').replace(/\D/g, '');
       if (!numero) {
