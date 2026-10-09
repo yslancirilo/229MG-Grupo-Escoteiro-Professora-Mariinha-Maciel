@@ -1,4 +1,5 @@
 let allData = [];
+
 const TOKEN = document.getElementById('adminSection').getAttribute('data-token');
 
 async function fetchApi(params) {
@@ -33,16 +34,16 @@ async function loadData() {
 function renderTable(data) {
   const tbody = document.getElementById('tableBody');
   const emptyMsg = document.getElementById('emptyMsg');
-  
+
   tbody.innerHTML = '';
-  
+
   if (data.length === 0) {
     emptyMsg.classList.remove('hidden');
     return;
   }
-  
+
   emptyMsg.classList.add('hidden');
-  
+
   data.forEach((row, idx) => {
     const tr = document.createElement('tr');
     const td1 = document.createElement('td');
@@ -62,12 +63,29 @@ function renderTable(data) {
     const td8 = document.createElement('td');
     td8.textContent = row.confirmacao || '';
     const td9 = document.createElement('td');
+
+    // Botão Deletar
     const btn = document.createElement('button');
     btn.className = 'btn-delete';
     btn.textContent = 'Deletar';
     btn.addEventListener('click', () => deleteRow(row.id || idx));
     td9.appendChild(btn);
-    
+
+    // Botão WhatsApp
+    const btnWpp = document.createElement('button');
+    btnWpp.className = 'btn-whatsapp';
+    btnWpp.textContent = '📲 WhatsApp';
+    btnWpp.addEventListener('click', () => {
+      const numero = (row.contato || '').replace(/\D/g, '');
+      if (!numero) {
+        alert('Número de contato não encontrado.');
+        return;
+      }
+      const numeroFormatado = numero.startsWith('55') ? numero : '55' + numero;
+      window.open(`https://wa.me/${numeroFormatado}`, '_blank');
+    });
+    td9.appendChild(btnWpp);
+
     tr.appendChild(td1);
     tr.appendChild(td2);
     tr.appendChild(td3);
@@ -99,7 +117,7 @@ async function deleteRow(rowId) {
 
 document.getElementById('searchInput').addEventListener('input', function () {
   const query = this.value.toLowerCase();
-  const filtered = allData.filter(row => 
+  const filtered = allData.filter(row =>
     (row.nomeJovem || '').toLowerCase().includes(query) ||
     (row.nomeResponsavel || '').toLowerCase().includes(query)
   );
@@ -111,7 +129,7 @@ document.getElementById('btnExport').addEventListener('click', function () {
     alert('Nenhum dado para exportar');
     return;
   }
-  
+
   const headers = ['#', 'Data', 'Jovem', 'Idade', 'Responsável', 'Endereço', 'Contato', 'Confirmação'];
   const rows = allData.map((row, idx) => [
     idx + 1,
@@ -123,15 +141,15 @@ document.getElementById('btnExport').addEventListener('click', function () {
     row.contato || '',
     row.confirmacao || '',
   ]);
-  
-  const csv = [headers, ...rows].map(row => 
+
+  const csv = [headers, ...rows].map(row =>
     row.map(cell => {
       const str = String(cell);
       if (str.match(/^[=+\-@]/)) return `'${str}`;
       return `"${str.replace(/"/g, '""')}"`;
     }).join(',')
   ).join('\n');
-  
+
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
