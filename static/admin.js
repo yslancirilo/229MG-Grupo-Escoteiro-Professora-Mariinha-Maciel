@@ -65,7 +65,6 @@ function renderTable(data) {
     const btn = document.createElement('button');
     btn.className = 'btn-delete';
     btn.textContent = 'Deletar';
-    deleteRow(row.id)
     btn.addEventListener('click', () => deleteRow(row.id || idx));
     td9.appendChild(btn);
     
