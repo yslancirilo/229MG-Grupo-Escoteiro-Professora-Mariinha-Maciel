@@ -434,6 +434,7 @@ table tbody tr:hover {
   border-radius: 6px;
   padding: 5px 10px;
   margin-left: 6px;
+  margin-top: 6px;
   cursor: pointer;
   font-size: 0.85rem;
   font-weight: 600;
